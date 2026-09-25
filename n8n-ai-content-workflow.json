@@ -1,0 +1,382 @@
+{
+  "name": "AI Content Generation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-content",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "content-generator"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "topic-check",
+              "leftValue": "={{ $json.topic }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "input-validation",
+      "name": "Input Validation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": {
+          "messageType": "multipleMessages",
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a professional content creator specializing in social media and blog content. Create engaging, professional content that drives engagement and provides value to the audience."
+            },
+            {
+              "role": "user",
+              "content": "Generate a LinkedIn post about: {{ $json.topic }}\n\nRequirements:\n- Professional tone\n- Include relevant hashtags\n- 150-300 words\n- Include a call-to-action\n- Target audience: {{ $json.target_audience || 'professionals' }}\n- Industry focus: {{ $json.industry || 'general business' }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 500
+        }
+      },
+      "id": "linkedin-generator",
+      "name": "Generate LinkedIn Post",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [680, 180]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": {
+          "messageType": "multipleMessages",
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a social media expert specializing in Twitter/X content. Create concise, engaging tweets that drive interaction and shares."
+            },
+            {
+              "role": "user",
+              "content": "Generate a Twitter/X post about: {{ $json.topic }}\n\nRequirements:\n- Maximum 280 characters\n- Engaging and conversational tone\n- Include 2-3 relevant hashtags\n- Include emojis where appropriate\n- Target audience: {{ $json.target_audience || 'general audience' }}\n- Make it shareable and engaging"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.8,
+          "maxTokens": 100
+        }
+      },
+      "id": "twitter-generator",
+      "name": "Generate Twitter Post",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": {
+          "messageType": "multipleMessages",
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a professional blog writer and content strategist. Create comprehensive, well-structured blog articles that provide value to readers and are optimized for SEO."
+            },
+            {
+              "role": "user",
+              "content": "Write a comprehensive blog article about: {{ $json.topic }}\n\nRequirements:\n- Word count: {{ $json.word_count || '800-1200' }} words\n- Include an engaging title\n- Structure with H2 and H3 headings\n- Include introduction, main content sections, and conclusion\n- Target audience: {{ $json.target_audience || 'general readers' }}\n- Tone: {{ $json.tone || 'professional but approachable' }}\n- Include actionable insights and takeaways\n- SEO-friendly with natural keyword integration\n- Add a compelling meta description"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 2000
+        }
+      },
+      "id": "blog-generator",
+      "name": "Generate Blog Article",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [680, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process and format the generated content\nconst inputData = $input.first().json;\nconst linkedinData = $input.all()[1]?.json;\nconst twitterData = $input.all()[2]?.json;\nconst blogData = $input.all()[3]?.json;\n\n// Extract content from AI responses\nconst linkedinPost = linkedinData?.choices?.[0]?.message?.content || linkedinData?.text || 'LinkedIn content generation failed';\nconst twitterPost = twitterData?.choices?.[0]?.message?.content || twitterData?.text || 'Twitter content generation failed';\nconst blogArticle = blogData?.choices?.[0]?.message?.content || blogData?.text || 'Blog article generation failed';\n\n// Create structured output\nconst result = {\n  metadata: {\n    topic: inputData.topic,\n    target_audience: inputData.target_audience || 'general',\n    industry: inputData.industry || 'general business',\n    generated_at: new Date().toISOString(),\n    workflow_version: '1.0'\n  },\n  content: {\n    linkedin: {\n      post: linkedinPost,\n      platform: 'LinkedIn',\n      character_count: linkedinPost.length,\n      recommended_posting_time: 'Tuesday-Thursday 8-10 AM or 12-2 PM'\n    },\n    twitter: {\n      post: twitterPost,\n      platform: 'Twitter/X',\n      character_count: twitterPost.length,\n      character_limit_check: twitterPost.length <= 280 ? 'PASS' : 'EXCEEDED',\n      recommended_posting_time: 'Monday-Friday 12-3 PM or 5-6 PM'\n    },\n    blog: {\n      article: blogArticle,\n      platform: 'Blog/Website',\n      word_count: blogArticle.split(' ').length,\n      estimated_reading_time: Math.ceil(blogArticle.split(' ').length / 200) + ' minutes'\n    }\n  },\n  publishing_suggestions: {\n    content_calendar: {\n      week_1: 'Publish blog article',\n      week_1_day_2: 'Share LinkedIn post',\n      week_1_day_3: 'Post Twitter content',\n      week_2: 'Create follow-up Twitter thread',\n      week_3: 'Share blog highlights on LinkedIn'\n    },\n    cross_promotion: {\n      linkedin_to_blog: 'Share blog link in LinkedIn post comments',\n      twitter_thread: 'Create Twitter thread with blog key points',\n      email_newsletter: 'Include blog summary in newsletter'\n    }\n  }\n};\n\nreturn result;"
+      },
+      "id": "content-processor",
+      "name": "Process Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "save-check",
+              "leftValue": "={{ $json.save_to_database }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "save-condition",
+      "name": "Save to Database?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "generated_content",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "topic": "={{ $json.metadata.topic }}",
+            "linkedin_post": "={{ $json.content.linkedin.post }}",
+            "twitter_post": "={{ $json.content.twitter.post }}",
+            "blog_article": "={{ $json.content.blog.article }}",
+            "target_audience": "={{ $json.metadata.target_audience }}",
+            "industry": "={{ $json.metadata.industry }}",
+            "generated_at": "={{ $json.metadata.generated_at }}",
+            "linkedin_char_count": "={{ $json.content.linkedin.character_count }}",
+            "twitter_char_count": "={{ $json.content.twitter.character_count }}",
+            "blog_word_count": "={{ $json.content.blog.word_count }}"
+          }
+        }
+      },
+      "id": "database-save",
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "response-success",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "{\n  \"error\": \"Invalid input\",\n  \"message\": \"Please provide a topic for content generation\",\n  \"required_fields\": [\"topic\"],\n  \"optional_fields\": [\"target_audience\", \"industry\", \"word_count\", \"tone\", \"save_to_database\"]\n}"
+      },
+      "id": "response-error",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "model": "gpt-3.5-turbo",
+        "messages": {
+          "messageType": "multipleMessages",
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a content strategy expert. Analyze the generated content and provide optimization suggestions."
+            },
+            {
+              "role": "user",
+              "content": "Analyze this content and provide optimization suggestions:\n\nTopic: {{ $json.metadata.topic }}\nLinkedIn Post: {{ $json.content.linkedin.post }}\nTwitter Post: {{ $json.content.twitter.post }}\nBlog Article: {{ $json.content.blog.article }}\n\nProvide suggestions for:\n1. SEO improvements\n2. Engagement optimization\n3. Content distribution strategy\n4. A/B testing ideas"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.6,
+          "maxTokens": 800
+        }
+      },
+      "id": "content-optimizer",
+      "name": "Content Optimization Suggestions",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [1120, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Validation": {
+      "main": [
+        [
+          {
+            "node": "Generate LinkedIn Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Twitter Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Blog Article",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "Process Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Twitter Post": {
+      "main": [
+        [
+          {
+            "node": "Process Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Blog Article": {
+      "main": [
+        [
+          {
+            "node": "Process Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Content": {
+      "main": [
+        [
+          {
+            "node": "Save to Database?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Content Optimization Suggestions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Database?": {
+      "main": [
+        [
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Database": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "id": "content-generation",
+      "name": "Content Generation"
+    },
+    {
+      "id": "ai-automation",
+      "name": "AI Automation"
+    },
+    {
+      "id": "social-media",
+      "name": "Social Media"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-06-09T12:00:00.000Z",
+  "versionId": "1"
+}

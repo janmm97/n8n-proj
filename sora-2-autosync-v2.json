@@ -1,0 +1,151 @@
+{
+  "name": "Sora 2 Ads AutoSync v2",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Trigger - Form Input",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sora2-ads-form",
+        "responseMode": "onReceived"
+      }
+    },
+    {
+      "id": "2",
+      "name": "Generate Voiceover Script",
+      "type": "n8n-nodes-base.openAi",
+      "parameters": {
+        "operation": "createChatCompletion",
+        "model": "gpt-4o-mini",
+        "prompt": "Generate an advertising voiceover script fitting a 10-second Sora video ad. Return JSON: {\"script\":\"...\",\"duration\":seconds}"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Generate Video Scene (Sora 2)",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.kie.ai/v1/video/sora-2-image-to-video",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"prompt\": \"{{ $json.prompt }}\", \"duration\": 10}"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Store in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "parameters": {
+        "operation": "insert",
+        "table": "Sora Ads",
+        "fields": {
+          "Script": "={{ $json.script }}",
+          "Duration": "={{ $json.duration }}",
+          "VideoURL": "={{ $json.video_url }}"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Collect Video URLs",
+      "type": "n8n-nodes-base.aggregate",
+      "parameters": {
+        "mode": "aggregateAllItemData"
+      }
+    },
+    {
+      "id": "6",
+      "name": "Combine & Trim Videos",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.json2video.com/v2/render",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"format\": {\"width\": 1080, \"height\": 1920}, \"clips\": [{\"asset\": {\"type\": \"video\", \"src\": \"{{ $json.VideoURL }}\"}, \"start\": 0, \"trimStart\": 0, \"length\": \"{{ $json.Duration || 10 }}\", \"audio_url\": \"{{ $json.audio_url || '' }}\"}], \"output\": {\"type\": \"video\", \"extension\": \"mp4\"}}"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Upload Final Video to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "parameters": {
+        "operation": "upload",
+        "binaryPropertyName": "data",
+        "fileName": "Sora_Ad_Final.mp4"
+      }
+    }
+  ],
+  "connections": {
+    "1": {
+      "main": [
+        [
+          {
+            "node": "2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2": {
+      "main": [
+        [
+          {
+            "node": "3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3": {
+      "main": [
+        [
+          {
+            "node": "4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4": {
+      "main": [
+        [
+          {
+            "node": "5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5": {
+      "main": [
+        [
+          {
+            "node": "6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6": {
+      "main": [
+        [
+          {
+            "node": "7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "version": 2
+}

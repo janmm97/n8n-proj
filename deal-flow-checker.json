@@ -1,0 +1,1165 @@
+{
+  "name": "Deal Flow Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8cd31de8-2028-487f-9312-b92a138e062a",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        596
+      ],
+      "id": "bdec8fa1-278b-40eb-a9da-f9152a935c67",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.Listings",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        248,
+        936
+      ],
+      "id": "adbb6c52-b367-439c-80f9-bd9fa6df5365",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here’s the data you’ll need:\n\nBusiness Name: {{ $json['Business Name'] }}\nAccess Link: {{ $json['Access Link'] }}\nRevenue: {{ $json.Revenue }}\nEBITDA: {{ $json.EBITDA }}\n\nTool use:\n- Call read_info ONLY if Revenue OR EBITDA is missing or unclear.\n- If read_info fails (403/captcha/login), rely on the provided inputs. Do NOT default to \"Unsure\" solely due to a link error.\n\nMetric parsing (case-insensitive):\n- Revenue keywords: \"Revenue\", \"Sales\", \"ARR\", \"Annual Recurring Revenue\", \"MRR\" (use ONLY if explicitly labeled MRR; then Revenue = MRR * 12).\n- EBITDA keywords: \"EBITDA\", \"Adjusted EBITDA\", \"Adj EBITDA\".\n- DO NOT treat as EBITDA: \"Net Income\", \"Net Profit\", \"Operating Income\", \"Operating Profit\", \"Gross Profit\", \"Cash Flow\", \"SDE\".\n- If only the non-EBITDA items are present, set EBITDA = null.\n- Do NOT estimate figures beyond the explicit mappings above.\n\nLocation/Operating Years:\n- Do not use read_info solely to verify location or operating years. Use them if they appear clearly in the same source; otherwise leave unknown.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a seasoned M&A advisor acting as a precise deal filter for ONE business at a time. Decide \"Pass\", \"Pursue\", or \"Unsure\" using ONLY explicit information from the provided input and, if needed, one call to the tool. Do not make outside assumptions.\n\nINPUT FIELDS:\n- Business Name, Access Link, Revenue (USD) or null, EBITDA (USD) or null\n\nTOOL:\n- One tool: read_info. Use it ONLY if Revenue OR EBITDA is missing/unclear. Single attempt. If it fails (403/captcha/login), continue with the given inputs; do NOT default to \"Unsure\" just because the link failed.\n\nCATEGORIES\nCategory 1 — SaaS / Software\n- Revenue ≥ 1,800,000; EBITDA ≥ 0; 3+ years operating; Location: USA or Canada\n\nCategory 2 — STRICT WHITELIST (must match ONE of the following types; otherwise OUT OF SCOPE)\n1) Healthcare / Med-Tech Services  (e.g., “healthcare services”, “clinical services”, “med-tech services”)\n2) Education / Ed-Tech / Tutoring  (e.g., “ed-tech services”, “tutoring services”, “learning services”)\n3) ISP (Internet Service Provider)  (e.g., “ISP”, “fiber ISP”, “broadband provider”, “WISP”)\n4) MSP (Managed IT / Managed Services)  (e.g., “MSP”, “managed IT services”, “managed helpdesk”, “RMM”)\n5) Telecommunications / TELCO / Telecom  (e.g., “telecom carrier”, “VoIP provider”, “UCaaS provider”, “CLEC”)\n6) Leadership Development / Corporate Training  (e.g., “leadership development firm”, “corporate training/L&D”, “facilitation/coaching firm”)\n7) Cybersecurity (Managed)  (e.g., “MSSP”, “SOC”, “MDR/XDR”, “managed security operations”)\n8) Data Security / Data Solutions  (e.g., “backup & disaster recovery (BDR)”, “DLP”, “data protection”, “managed backup”)\n9) Cloud Migration Consultancy  (e.g., “cloud migration”, “cloud modernization”, “Azure/AWS/GCP migration”)\n\nCategory 2 thresholds:\n- Revenue ≥ 5,000,000; EBITDA ≥ 2,000,000; 3+ years operating; Location: USA or Canada\n\nCATEGORY DETERMINATION (STRICT — run BEFORE thresholds)\n- A business is Category 2 ONLY if it explicitly matches one of the 9 whitelist types or their clear synonyms listed above.\n- OUT OF SCOPE (examples): e-commerce/DTC; agencies/consultancies not listed above; general manufacturing; real estate; hospitality; environmental/remediation/specialty contracting & trades/home services including: **protective/industrial coatings, lead/asbestos/mold abatement, environmental remediation, painting, plumbing, landscaping, roofing, HVAC, electrical, general contracting**. These must be \"Pass\".\n- Do NOT infer SaaS from “subscriptions”, a website, or online sales if the offering is physical goods or general services.\n\nMETRICS & PARSING (case-insensitive)\n- Revenue: “Revenue”, “Sales”, “ARR”, “Annual Recurring Revenue”, explicit “MRR” (then Revenue = MRR × 12)\n- EBITDA: “EBITDA”, “Adjusted EBITDA”, “Adj EBITDA”\n- NOT EBITDA: “Net Income/Profit”, “Operating Income/Profit”, “Gross Profit”, “Cash Flow”, “SDE” → if only these appear, set EBITDA = null\n- Do not fabricate or estimate beyond these mappings. After a needed read_info attempt, keep missing numerics as null.\n- Treat amounts as USD; strip symbols/commas; parse numerics only.\n\nDECISION POLICY (run in order)\n1) CATEGORY CHECK:\n   - If NOT SaaS AND NOT in the Category-2 whitelist → Decision = \"Pass\".\n\n2) THRESHOLDS:\n   - If category is in scope but any available numeric fails thresholds → \"Pass\" (location/tenure not needed to fail).\n\n2.5) IN-SCOPE BUT MISSING REQUIRED NUMERIC → \"Unsure\"\n   - If category is in scope AND (Revenue OR EBITDA) is missing/unclear AFTER a needed read_info attempt → \"Unsure\". In Explanation, name the missing/unclear metric and note the tool attempt/result.\n\n3) IN-SCOPE + THRESHOLDS MET:\n   - If USA/Canada AND ≥3 years are confirmed → \"Pursue\".\n   - If either is unknown and could flip Pursue→Pass → \"Unsure\".\n\n4) LINK FAILURES:\n   - Link/tool errors alone do NOT force \"Unsure\". Continue with available inputs. (If a required numeric remains missing for an in-scope business, apply rule 2.5.)\n\nHARD VALIDATION (must hold true)\n- Output shape: exactly ONE JSON object (no arrays/wrappers).\n- Out-of-scope examples (listed above, including coatings/abatement/remediation/trades) → \"Pass\".\n- If SaaS and Revenue < 1,800,000 → \"Pass\".\n- If Category 2 and (Revenue < 5,000,000 OR EBITDA < 2,000,000) → \"Pass\".\n- If in scope AND (Revenue is null OR EBITDA is null) AFTER a needed read_info attempt → \"Unsure\".\n- If \"Pursue\": category in scope, thresholds met, AND USA/Canada + ≥3 years explicitly confirmed.\n- If \"Unsure\": name the specific missing/unclear item that could change Pass ↔ Pursue and confirm read_info was attempted only if Revenue/EBITDA were missing/unclear.\n\nOUTPUT (exactly one JSON object; no code fences; no extra keys)\n{\n  \"Business Name\": \"string\",\n  \"Access Link\": \"https://example.com\",\n  \"Revenue\": 12345 or null,\n  \"EBITDA\": 6789 or null,\n  \"Business Summary\": \"One concise sentence (≤25 words) describing what the business does, based only on the input and/or the access link.\",\n  \"Decision\": \"Pass\" or \"Pursue\" or \"Unsure\",\n  \"Explanation\": \"Short rationale. If read_info was attempted, say so and summarize what it returned or why it failed, and what specific info would resolve uncertainty if 'Unsure'.\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        1056
+      ],
+      "id": "d17ce01d-13ce-4a34-b0c1-1784bc6a10d2",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        816,
+        936
+      ],
+      "id": "747be638-b56c-4aca-a28d-c4e47ad07e1c",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        1088
+      ],
+      "id": "79a4f5f0-f990-47dc-ab81-d0fb6484d6df",
+      "name": "Wait",
+      "webhookId": "0120e1c6-ca64-45be-9999-28e56ae00629"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Overview:\nGet the list of businesses for sale.\n\nInput: {{ $json.text }}\n\nOutput:\nRespond only with a valid JSON object in the following format:\n\n{\n\"Business Count\": 1,2,3,4,5,6,\n\"Business Name\": \"string\",\n\"Access Link\": \"The link to access more information about the business\",\n\"Revenue\": 12345,\n\"EBITDA\": 6789,\n}",
+              "role": "system"
+            },
+            {
+              "content": "=Here's the content of the email: {{ $json.text }}"
+            }
+          ]
+        },
+        "jsonOutput": "={\n  \"type\": \"object\",\n  \"properties\": {\n    \"Business Name\": {\n      \"type\": \"string\"\n    },\n    \"Access Link\": {\n      \"type\": \"string\",\n      \"format\": \"uri\"\n    },\n    \"Revenue\": {\n      \"type\": \"number\",\n      \"minimum\": 0\n    },\n    \"EBITDA\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\"Business Name\", \"Access Link\", \"Revenue\", \"EBITDA\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -672,
+        596
+      ],
+      "id": "d5769bf4-4bdd-4117-9cbb-b9ce476bff61",
+      "name": "clean_text",
+      "credentials": {
+        "openAiApi": {
+          "id": "YryKyG8FdwRf4Ua5",
+          "name": "openai-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c71424e5-751b-402f-b85d-a3dcec4cf066",
+              "leftValue": "={{ $json.message.content['Business Count'] }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        596
+      ],
+      "id": "76f6b7b9-28f1-472f-8b22-18b2af31b307",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4dca6807-7b5b-4ec6-a745-15165bca9f80",
+              "name": "message.content.Listings",
+              "value": "={{ $json.message.content.Businesses }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        936
+      ],
+      "id": "3b8d5db5-0b77-4d5d-98b0-7975bcccf6f9",
+      "name": "get_all_biz"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04b9b3b4-dc31-411e-9e3e-304979ac7276",
+              "name": "Business Name",
+              "value": "={{ $json['Business Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9b9802df-9d6e-48d2-8f89-eb505d5958ad",
+              "name": "Access Link",
+              "value": "={{ $json['Access Link'] }}",
+              "type": "string"
+            },
+            {
+              "id": "898e8aa5-7162-4808-9e23-891e4ccfb432",
+              "name": "Revenue",
+              "value": "={{ $json.Revenue }}",
+              "type": "string"
+            },
+            {
+              "id": "fc4da329-c109-416f-bd6e-cbab857e3913",
+              "name": "EBITDA",
+              "value": "={{ $json.EBITDA }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        936
+      ],
+      "id": "167b3a5b-a357-4127-ac06-80e72c64c167",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Business Name\": { \"type\": \"string\" },\n    \"Access Link\": { \"type\": \"string\", \"format\": \"uri\" },\n    \"Revenue\": { \"type\": [\"number\", \"null\"], \"minimum\": 0 },\n    \"EBITDA\": { \"type\": [\"number\", \"null\"] },\n    \"Business Summary\": { \"type\": \"string\" },\n    \"Decision\": {\n      \"type\": \"string\",\n      \"enum\": [\"Pass\", \"Pursue\", \"Unsure\"]\n    },\n    \"Explanation\": { \"type\": \"string\" }\n  },\n  \"required\": [\n    \"Business Name\",\n    \"Access Link\",\n    \"Revenue\",\n    \"EBITDA\",\n    \"Business Summary\",\n    \"Decision\",\n    \"Explanation\"\n  ],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        1296
+      ],
+      "id": "c52b55db-55f8-47f6-9079-7a3b52b67b72",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        1296
+      ],
+      "id": "9acc9a4a-467a-42fc-8aaa-c8ba1baca69a",
+      "name": "4o_mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "YryKyG8FdwRf4Ua5",
+          "name": "openai-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=read_info read content using the access link.",
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "redirect": {
+            "redirect": {
+              "maxRedirects": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Max_Redirects', ``, 'number') }}"
+            }
+          },
+          "proxy": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Proxy', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1088,
+        1296
+      ],
+      "id": "7a1bb078-fdfc-4f9e-8c60-b5b08022e1fd",
+      "name": "read_info",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcf70527-4761-4217-a3d1-2add454ddf4c",
+              "name": "output['Business Name']",
+              "value": "={{ $json.output['Business Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1d1e87d6-4191-495e-8648-f0a0a01dc783",
+              "name": "output['Access Link']",
+              "value": "={{ $json.output['Access Link'] }}",
+              "type": "string"
+            },
+            {
+              "id": "928554bc-5269-406f-ba99-dff593544989",
+              "name": "output.Revenue",
+              "value": "={{ $json.output.Revenue }}",
+              "type": "string"
+            },
+            {
+              "id": "cea3699e-a286-4156-a67e-1e2adb463819",
+              "name": "output.EBITDA",
+              "value": "={{ $json.output.EBITDA }}",
+              "type": "string"
+            },
+            {
+              "id": "5c061854-8f30-4574-bf9c-c3aada0b91c6",
+              "name": "output['Business Summary']",
+              "value": "={{ $json.output['Business Summary'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1d5873f4-dbab-4684-8969-f9ad4d72f6d9",
+              "name": "output.Decision",
+              "value": "={{ $json.output.Decision }}",
+              "type": "string"
+            },
+            {
+              "id": "7cdef908-be94-4039-a477-4618adc0f795",
+              "name": "output.Explanation",
+              "value": "={{ $json.output.Explanation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        784
+      ],
+      "id": "1aed591c-5f92-414a-8826-ddcf8524cba3",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Pursue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d776087f-b3c2-4645-a34c-838fc7d6ef1c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pursue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d6d37de2-da66-4d75-8298-5948e9b3b49e",
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Unsure",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Unsure"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "eadf8d2a-86ee-4d1c-b6a7-f36d07fa21ec",
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pass"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1312,
+        768
+      ],
+      "id": "d55b6eb2-4fd5-42d8-8fba-56c3c4852ce2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29a12f77-b4dc-4221-9a6b-797b7ee9c32b",
+              "name": "message.content['Business Name']",
+              "value": "={{ $json.message.content['Business Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2c8bcc1c-3ef1-4a72-a16f-ff24549d3689",
+              "name": "message.content['Access Link']",
+              "value": "={{ $json.message.content['Access Link'] }}",
+              "type": "string"
+            },
+            {
+              "id": "67d1e527-cc88-4435-9390-79bdb05825d9",
+              "name": "message.content.Revenue",
+              "value": "={{ $json.message.content.Revenue }}",
+              "type": "number"
+            },
+            {
+              "id": "01cc9cb3-b22e-4dca-8fdf-3128f4cd0ce1",
+              "name": "message.content.EBITDA",
+              "value": "={{ $json.message.content.EBITDA }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        256
+      ],
+      "id": "6a9e68dd-6e3c-4809-9ec6-77eb6d1561d5",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here’s the data you’ll need:\n\nBusiness Name: {{ $json.message.content['Business Name'] }}\nAccess Link: {{ $json.message.content['Access Link'] }}\nRevenue: {{ $json.message.content.Revenue }}\nEBITDA: {{ $json.message.content.EBITDA }}\n\nInstructions for this one record:\n- Call read_info_2 ONLY if Revenue OR EBITDA is missing/unclear.\n- If read_info_2 fails (403/captcha/login), rely on the provided inputs. Do NOT pick \"Unsure\" solely due to a link error.\n- Revenue synonyms: Revenue, Sales, ARR, Annual Recurring Revenue, explicit MRR (then Revenue = MRR * 12).\n- EBITDA synonyms: EBITDA, Adjusted EBITDA, Adj EBITDA.\n- NOT EBITDA: Net Income/Profit, Operating Income/Profit, Gross Profit, Cash Flow, SDE (leave EBITDA = null if only these are present).\n- Focus on THIS business only even if the page lists multiple companies.\n\nReturn exactly one JSON object per the System Message’s OUTPUT spec.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a seasoned M&A advisor acting as a precise deal filter for ONE business at a time. Decide \"Pass\", \"Pursue\", or \"Unsure\" using ONLY explicit information from the provided input and, if needed, one call to the tool. Do not make outside assumptions.\n\nINPUT FIELDS (single business):\n- Business Name\n- Access Link\n- Revenue (USD) or null\n- EBITDA (USD) or null\n\nTOOL:\n- One tool: read_info_2. Use it ONLY if Revenue OR EBITDA is missing/unclear. Single attempt. If it fails (403/captcha/login), continue with the given inputs; DO NOT default to \"Unsure\" just because the link failed.\n- Access Link normalization: if the link is provided in markdown form [text](url), extract the raw url.\n\nCATEGORIES:\nCategory 1 — SaaS / Software\n- Revenue ≥ $1,800,000\n- EBITDA ≥ $0 (breakeven or positive)\n- 3+ years operating\n- Location: USA or Canada\n\nCategory 2 — STRICT WHITELIST (must match ONE; otherwise OUT OF SCOPE)\n1) Healthcare / Med-Tech Services (e.g., “healthcare services”, “clinical services”, “med-tech services”)\n2) Education / Ed-Tech / Tutoring (e.g., “ed-tech services”, “tutoring services”, “learning services”)\n3) ISP (Internet Service Provider) (e.g., “ISP”, “fiber ISP”, “broadband provider”, “WISP”)\n4) MSP (Managed IT / Managed Services) (e.g., “MSP”, “managed IT services”, “managed helpdesk”, “RMM”)\n5) Telecommunications / TELCO / Telecom (e.g., “telecom carrier”, “VoIP provider”, “UCaaS provider”, “CLEC”)\n6) Leadership Development / Corporate Training (e.g., “leadership development”, “corporate training/L&D”, “facilitation/coaching”)\n7) Cybersecurity (Managed) (e.g., “MSSP”, “SOC”, “MDR/XDR”, “managed security operations”)\n8) Data Security / Data Solutions (e.g., “backup & disaster recovery/BDR”, “DLP”, “data protection”, “managed backup”)\n9) Cloud Migration Consultancy (e.g., “cloud migration”, “cloud modernization”, “Azure/AWS/GCP migration”)\n\nCategory 2 thresholds:\n- Revenue ≥ $5,000,000\n- EBITDA ≥ $2,000,000\n- 3+ years operating\n- Location: USA or Canada\n\nCATEGORY DETERMINATION (STRICT — run BEFORE thresholds):\n- A business is Category 2 ONLY if it explicitly matches one of the 9 whitelist types or their clear synonyms listed above.\n- OUT OF SCOPE (examples): e-commerce/DTC (keywords: “e-commerce”, “AOV”, “SKU”, “cart”, “DTC”, “Amazon/FBA”, “repeat order rate”); agencies/consultancies that are not MSP/Cyber/Cloud-migration; general manufacturing; real estate; hospitality; environmental/remediation/specialty contracting & TRADES/HOME SERVICES including: **protective/industrial coatings, lead/asbestos/mold abatement, environmental remediation, painting, plumbing, landscaping, roofing, HVAC, electrical, general contracting**. These must be \"Pass\".\n- Do NOT infer SaaS from having a website, subscriptions, or ARR if the offering is physical goods or general services.\n\nMETRIC PARSING (case-insensitive):\n- Revenue synonyms: \"Revenue\", \"Sales\", \"ARR\", \"Annual Recurring Revenue\", explicit \"MRR\" (then Revenue = MRR × 12).\n- EBITDA synonyms: \"EBITDA\", \"Adjusted EBITDA\", \"Adj EBITDA\".\n- NOT EBITDA: \"Net Income/Profit\", \"Operating Income/Profit\", \"Gross Profit\", \"Cash Flow\", \"SDE\". If only these appear, set EBITDA = null.\n- Do not fabricate or estimate beyond the explicit mappings above. If a required numeric remains missing after a needed read_info_2 attempt, keep it null.\n- Treat all amounts as USD; strip symbols/commas; parse numerics only.\n\nDECISION POLICY (single business; run in order):\n1) OUT-OF-SCOPE → PASS\n   If the business is not SaaS and not in the Category-2 whitelist, set Decision = \"Pass\" (this is not “Category Ambiguity”).\n\n2) THRESHOLD FAIL → PASS\n   If category is in scope but available numbers clearly fail the relevant thresholds, set \"Pass\" (location/tenure not needed to fail).\n\n2.5) IN-SCOPE BUT MISSING A REQUIRED NUMERIC → UNSURE\n   If category is in scope AND (Revenue OR EBITDA) is missing/unclear AFTER a needed read_info_2 attempt, set Decision = \"Unsure\". In Explanation, name the missing/unclear metric and note the tool attempt/result.\n\n3) IN-SCOPE + THRESHOLDS MET:\n   - If location (USA/Canada) AND 3+ years are confirmed → \"Pursue\".\n   - If either is unknown, and that missing info could flip Pursue → Pass → \"Unsure\".\n\n4) LINK FAILURES:\n   Link/tool errors alone do NOT force \"Unsure\". Continue with available inputs. (However, if a required numeric remains missing for an in-scope business, apply rule 2.5.)\n\nLINK / LIST PAGES:\n- If the Access Link is a directory or contains multiple listings, focus solely on the named Business. If no matching section exists, continue with inputs only.\n\nHARD VALIDATION RULES (single business):\n- Output Shape: return exactly ONE JSON object with the required keys. No arrays, wrappers, or extra keys.\n- Category Enforcement:\n  • Out-of-scope examples (above, incl. coatings/abatement/remediation/trades) → must be \"Pass\".\n- Decision Gating:\n  a) If not SaaS and not Category-2 → \"Pass\".\n  b) If in scope but any numeric fails thresholds → \"Pass\".\n     • SaaS thresholds: Revenue ≥ 1,800,000 AND EBITDA ≥ 0.\n     • Category-2 thresholds: Revenue ≥ 5,000,000 AND EBITDA ≥ 2,000,000.\n  c) If in scope AND thresholds met:\n     • If USA/Canada AND ≥3 years confirmed → \"Pursue\".\n     • If either unknown and could flip the decision → \"Unsure\".\n  d) If in scope AND (Revenue == null OR EBITDA == null) AFTER a needed read_info_2 attempt → \"Unsure\".\n- Metric Sanity:\n  • EBITDA must be explicitly labeled “EBITDA”, “Adjusted EBITDA”, or “Adj EBITDA”.\n  • Do NOT map Net Income/Profit, Operating Income/Profit, Gross Profit, Cash Flow, or SDE to EBITDA. If only these exist, set EBITDA = null.\n- Tool Use:\n  • Call read_info_2 ONLY if Revenue OR EBITDA is missing/unclear. One attempt. If it fails, continue with inputs.\n\nFINAL SELF-CHECK (before emitting JSON):\n- If SaaS and Revenue < 1,800,000 → Decision must be \"Pass\".\n- If Category-2 and (Revenue < 5,000,000 OR EBITDA < 2,000,000) → \"Pass\".\n- If in scope AND (Revenue is null OR EBITDA is null) AFTER a needed read_info_2 attempt → Decision must be \"Unsure\".\n- If Decision = \"Pursue\", thresholds met, category in scope, and both USA/Canada and ≥3 years explicitly confirmed.\n- If Decision = \"Unsure\", explicitly state which missing/unclear item could change Pass ↔ Pursue and confirm read_info_2 was attempted only if Revenue/EBITDA were missing/unclear.\n\nOUTPUT (exactly one JSON object; no code fences; no extra keys):\n{\n  \"Business Name\": \"string\",\n  \"Access Link\": \"https://example.com\",\n  \"Revenue\": 12345 or null,\n  \"EBITDA\": 6789 or null,\n  \"Business Summary\": \"One concise sentence (≤25 words) describing what the business does, based only on the input and/or the access link.\",\n  \"Decision\": \"Pass\" or \"Pursue\" or \"Unsure\",\n  \"Explanation\": \"Short rationale. If read_info_2 was attempted, say so and summarize what it returned or why it failed, and what specific info would resolve uncertainty if 'Unsure'.\"\n}\n\nSTRICT OUTPUT RULES:\n- Return a single JSON object only.\n- Use null for unknown numeric fields.\n- Do not include markdown, code blocks, or commentary outside the JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        184,
+        256
+      ],
+      "id": "c764c204-c13a-4b92-a5c6-f611fccbf41a",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Business Name\": { \"type\": \"string\" },\n    \"Access Link\": { \"type\": \"string\", \"format\": \"uri\" },\n    \"Revenue\": { \"type\": [\"number\", \"null\"], \"minimum\": 0 },\n    \"EBITDA\": { \"type\": [\"number\", \"null\"] },\n    \"Business Summary\": { \"type\": \"string\" },\n    \"Decision\": {\n      \"type\": \"string\",\n      \"enum\": [\"Pass\", \"Pursue\", \"Unsure\"]\n    },\n    \"Explanation\": { \"type\": \"string\" }\n  },\n  \"required\": [\n    \"Business Name\",\n    \"Access Link\",\n    \"Revenue\",\n    \"EBITDA\",\n    \"Business Summary\",\n    \"Decision\",\n    \"Explanation\"\n  ],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        480
+      ],
+      "id": "860fcbc4-4f57-4893-bd04-519a46ca0e0b",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        480
+      ],
+      "id": "e7be8653-a633-43f5-a2ee-f53a430e4215",
+      "name": "4o_mini-2",
+      "credentials": {
+        "openAiApi": {
+          "id": "YryKyG8FdwRf4Ua5",
+          "name": "openai-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "read_info_2 read content using the access link.",
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        480
+      ],
+      "id": "9789befb-34a2-43b1-a4c9-54749a40b1ea",
+      "name": "read_info_2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fdf07bb7-376e-4cde-bdeb-bf031ba1a17c",
+              "name": "output['Business Name']",
+              "value": "={{ $json.output['Business Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "fd91f523-5519-4ae2-96cb-c4b334dc875e",
+              "name": "output['Access Link']",
+              "value": "={{ $json.output['Access Link'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1d574730-62eb-428d-ac61-ede87ab09932",
+              "name": "output.Revenue",
+              "value": "={{ $json.output.Revenue }}",
+              "type": "number"
+            },
+            {
+              "id": "fcc39421-cf82-4049-b90a-5203b48aca0b",
+              "name": "output.EBITDA",
+              "value": "={{ $json.output.EBITDA }}",
+              "type": "number"
+            },
+            {
+              "id": "8c01e628-b29a-4e43-8887-981722062286",
+              "name": "output.Decision",
+              "value": "={{ $json.output.Decision }}",
+              "type": "string"
+            },
+            {
+              "id": "723d68fc-93d8-4e58-92b5-aec8c9e72be9",
+              "name": "output['Business Summary']",
+              "value": "={{ $json.output['Business Summary'] }}",
+              "type": "string"
+            },
+            {
+              "id": "3a1a071a-d18c-44b1-ac61-1df43f7394d7",
+              "name": "output.Explanation",
+              "value": "={{ $json.output.Explanation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        256
+      ],
+      "id": "73735933-73e5-4a35-ac76-fd7791403c6a",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Pursue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6c7d3a8e-e42b-4c40-8d8d-434d104f3fa0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pursue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e74ae392-91cc-4483-8b04-45358ba6e3db",
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pass"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cb4fd39e-9085-475a-90c6-0e8871a1b11c",
+                    "leftValue": "={{ $json.output.Decision }}",
+                    "rightValue": "Unsure",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Unsure"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        240
+      ],
+      "id": "2c4748f0-7ca1-4a18-9de7-223c397c0d15",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "[SLACK_CHANNEL_ID]",
+          "mode": "list",
+          "cachedResultName": "opportunity-channel"
+        },
+        "text": "=New Deal Opportunity: {{ $json.output['Business Name'] }}\n\nAbout the Business: {{ $json.output['Business Summary'] }}\n\nAccess Link/Website: {{ $json.output['Access Link'] }}\n\nRevenue: {{ $json.output.Revenue }}\n\nEBITDA: {{ $json.output.EBITDA }}\n\n{{ $json.output.Explanation }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1536,
+        592
+      ],
+      "id": "026f256f-1e70-49ad-b710-53907e428308",
+      "name": "Pursue",
+      "webhookId": "73cb22d2-3c1c-44f5-ae25-b380a69bbd17",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "z7cv7l07SJG5lVDd",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "[SLACK_CHANNEL_ID]",
+          "mode": "list",
+          "cachedResultName": "review-channel"
+        },
+        "text": "=Here are the deals that needs reviewing:\n\nBusiness Name: {{ $json.output['Business Name'] }}\n\nAccess Link: {{ $json.output['Access Link'] }}\n\nBusiness Summary: {{ $json.output['Business Summary'] }}\n\nExplanation: {{ $json.output.Explanation }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1536,
+        784
+      ],
+      "id": "4b21d3eb-fdb1-4e4d-ae0a-b0f2e41b4a8c",
+      "name": "Unsure",
+      "webhookId": "15752f39-ef32-412d-9e82-2393acf688e1",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "z7cv7l07SJG5lVDd",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        976
+      ],
+      "id": "af804e8e-2636-4385-b17c-8935ae2356dd",
+      "name": "Pass"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "[SLACK_CHANNEL_ID]",
+          "mode": "list",
+          "cachedResultName": "opportunity-channel"
+        },
+        "text": "=New Deal Opportunity: {{ $json.output['Business Name'] }}\n\nAbout the Business: {{ $json.output['Business Summary'] }}\n\nAccess Link: {{ $json.output['Access Link'] }}\n\nRevenue: {{ $json.output.Revenue }}\n\nEBITDA: {{ $json.output.EBITDA }}\n\n{{ $json.output.Explanation }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1160,
+        64
+      ],
+      "id": "69d7b71f-883b-48cc-9d0b-d63b8193c8c3",
+      "name": "Pursue-1",
+      "webhookId": "e5a76518-4e9e-4730-a8cd-86ce6de758c1",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "z7cv7l07SJG5lVDd",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        256
+      ],
+      "id": "790041dd-22fb-4b0a-87bf-258ff2c33732",
+      "name": "Pass1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "[SLACK_CHANNEL_ID]",
+          "mode": "list",
+          "cachedResultName": "review-channel"
+        },
+        "text": "Hi",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1160,
+        448
+      ],
+      "id": "94e5a1b4-34cb-403e-ab30-31ec3d962a0a",
+      "name": "Unsure-1",
+      "webhookId": "dfdf6c54-4520-4ac7-b418-2368c12bd3b6",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "z7cv7l07SJG5lVDd",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "Label_357830734198576452"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1120,
+        596
+      ],
+      "id": "47809fd6-1393-4da5-abfe-7991b3e13a18",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "w8UsVf3XFIcATfdG",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "clean_text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean_text": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get_all_biz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_all_biz": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4o_mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Pursue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unsure",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4o_mini-2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_info_2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Pursue-1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unsure-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "796ed84f-40f7-455e-aaee-876584ec8486",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eef61c30cc5c4afb9ce962d68151bf79155e2497e6f5437c9c97bc01facc30cc"
+  },
+  "id": "NKd7P6256OZfWKJX",
+  "tags": []
+}

@@ -1,0 +1,2412 @@
+{
+  "name": "Content Writer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 3,
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4624,
+        -2656
+      ],
+      "id": "fc227b06-add1-41cc-a780-54b4541756d8",
+      "name": "7am"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk",
+          "mode": "list",
+          "cachedResultName": "[Company]'s Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 653919411,
+          "mode": "list",
+          "cachedResultName": "[Company]'s X Contents",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit#gid=653919411"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -4096,
+        -2896
+      ],
+      "id": "19bcd063-b360-4192-9a3a-41d6a4586a0a",
+      "name": "LinkedIn Post",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk",
+          "mode": "list",
+          "cachedResultName": "[Company]'s Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 653919411,
+          "mode": "list",
+          "cachedResultName": "[Company]'s X Contents",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit#gid=653919411"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -4288,
+        -2896
+      ],
+      "id": "5183a954-c94d-4bd2-8cfe-260acac10be9",
+      "name": "X Post",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -4480,
+        -2896
+      ],
+      "id": "a77cb9fb-a793-4cd0-a55d-1fb1050775cc",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"LinkedIn Thought Leadership\": { \"Topic\": \"string\" },\n  \"LinkedIn Promotional\": { \"Topic\": \"string\" },\n  \"X Thought Leadership\": { \"Topic\": \"string\" },\n  \"X Promotional\": { \"Topic\": \"string\" },\n  \"Workplace Meme\": { \"Idea\": \"string\" },\n  \"[Company] Showcase\": { \"Topic\": \"string\" }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -4160,
+        -2560
+      ],
+      "id": "3f034070-abef-4e5b-8e80-f03d46424dac",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.timestamp }}\n\nHere are your tools:\n\nLinkedIn Post – Use this to read all previously published LinkedIn posts.  \nX Post – Use this to read all previously published X posts.  \nThink – Use this to brainstorm new, creative, and witty ideas.  \n[Company] Knowledge Tool – Use this to explore [Company]’s product features, updates, and customer use cases for inspiration.\n\nInstructions:\n1. Review LinkedIn and X posts first to avoid repetition.  \n2. Use the [Company] Knowledge Tool to inspire product-based content ideas for “[Company] Showcase.”  \n3. Use the Think tool to creatively combine insights, humor, and originality.  \n4. Output one idea per category:\n   - LinkedIn\n   - X (Twitter)\n   - Workplace Meme\n   - [Company] Showcase\n5. Keep each idea short, unique, and funny or thought-provoking.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# You are an Idea Agent — a creative strategist who generates *original, witty, and high-impact* content ideas for [Company]’s social media channels.\n\nYour mission: brainstorm *fresh, unique, and platform-specific* ideas across six categories:\n\n1. LinkedIn Thought Leadership – Insight-driven, reflective topics centered on the Founder or startup experience.  \n2. LinkedIn Promotional – Brand-focused topics that promote [Company]’s mission, products, and innovation.  \n3. X Thought Leadership – Authentic, human posts sharing founder insights, startup lessons, or industry reflections.  \n4. X Promotional – Product-driven, engaging hooks that promote [Company]’s innovation and value.  \n5. Workplace Meme – Completely original meme *concepts* (not captions or reposts).  \n6. [Company] Showcase – Educational topics that highlight specific [Company] features, use cases, tutorials, or product updates.\n\n---\n\n## 🧠 Tools You Can Use\n\n- LinkedIn Post Tool – Review [Company]’s *previously published LinkedIn posts* to identify recurring themes, tone, and audience interests.  \n- X Post Tool – Review [Company]’s *previously published X posts* to find patterns in tone, humor, and engagement.  \n- [Company] Knowledge Tool – Explore [Company]’s features, updates, use cases, and tutorials for product-related inspiration.  \n- Tavily Tool – Optionally cross-check or enrich ideas for timeliness, credibility, or trend relevance.  \n- Think Tool – Brainstorm creatively with humor, insight, and originality.\n\n⚠️ Never reference or analyze prior posts when generating Workplace Meme ideas.  \nMeme ideas must be *entirely new* — not based on existing formats, captions, or viral trends.\n\n---\n\n## 🎯 Writing Objectives\n\n### 🧩 LinkedIn Thought Leadership\n- Focus on *Founder’s life*, *startup lessons*, or *industry reflections*.  \n- Use the CEO Post Tool and LinkedIn Post Tool to identify recurring tones and insights.  \n- Draw inspiration to create a *new, related idea* — not a repeat.  \n- Goal: Build authority and trust by sharing *unique, innovative, and human-centered insights*.  \n- Optionally validate with Tavily Tool for trend relevance.\n\n---\n\n### 📣 LinkedIn Promotional\n- Strictly use [Company] Knowledge Tool then select one specific *feature, update, use case, or tutorial* from [Company].\n- Use the  LinkedIn Post Tool, and X Post Tool as references to understand our posting style and tone.\n- After checking the [Company] Knowledge Tool, LinkedIn Post Tool, and X Post Tool, strictly use the LIP tool and LITL tool to make sure we're not suggesting the same topic (e.g. if you see suggestion about AuthKit, do not suggest another topic that involves AuthKit.)\n- **Do not** suggest demos, videos, tutorials, or step-by-step walkthroughs. Avoid phrases like “show,” “build,” “walkthrough,” or “demo.”  \n- You may reference existing tutorials or use cases as inspiration for the *concept or value proposition*, but not for the format or structure of the post.  \n- Focus on educational or conceptual angles, such as:  \n  - “What is [feature]”  \n  - “How [feature] improves developer experience”  \n  - “Why teams use [feature] for [use-case]”  \n- Goal: Drive *awareness, understanding, and brand trust* through professional, clear, and inspiring content.\n\n---\n\n### 🧠 X Thought Leadership\n- Focus on *authentic reflections*, *startup insights*, or *industry trends* that feel human and relatable.  \n- Use X Post Tool and LinkedIn Post Tool to identify recurring tones and engagement styles.  \n- Create a *new, related idea* that expands on successful patterns — not a copy.  \n- Goal: Position the Founder or brand as a *trusted, human voice* in the startup and creative ecosystem.  \n- Optionally validate topic relevance with Tavily Tool.\n\n---\n\n### 🚀 X Promotional\n- Strictly use [Company] Knowledge Tool, LinkedIn Post Tool, and X Post Tool as references to understand our posting style, tone, and audience engagement patterns.  \n- Identify recurring techniques in prior promotional posts — such as humor, brevity, wit, and conversational tone.  \n- Create a *new promotional hook or thread idea* that highlights a specific [Company] feature, capability, or vision in an engaging and insightful way.  \n- Use the [Company] Knowledge Tool to suggest posts that **explain or spotlight** [Company]’s innovation or developer impact — not tutorials or demos.  \n- **Do not** suggest videos, walkthroughs, or step-by-step tutorials. Avoid phrasing like “show,” “walkthrough,” “build,” or “demo.”  \n- You may reference tutorial topics or use cases for *context or inspiration*, but the post should frame them as ideas or insights — not instructions.  \n- Focus on short, clever, and thought-provoking angles, such as:  \n  - “What makes [feature] a developer favorite”  \n  - “How [feature] rethinks [problem area]”  \n  - “Why teams love using [feature] for [use-case]”  \n- Goal: Showcase [Company] in a *clever, concise, and viral-ready* way that sparks curiosity and reinforces brand expertise.\n\n---\n\n### 😂 Workplace Meme\n- Use only your *creative reasoning* — no tools.  \n- Generate one original meme concept (not a caption or template) that resonates with founders, CEOs, or creative professionals.  \n- Focus on *relatable humor* drawn from startup chaos, leadership quirks, or creative team dynamics.  \n- Output only the *concept idea*, not a description or caption.\n\n---\n\n### 💡 [Company] Showcase\n- Use only the [Company] Knowledge Tool.  \n- Select one specific *feature, update, use case, or tutorial* from [Company].  \n- Explain what it is, why it matters, and how it empowers creators or teams.  \n- Goal: Educate while highlighting [Company] as *innovative, practical, and empowering*.\n\n---\n\n## 🧾 Output Format\n\nRespond only in valid JSON matching this schema:\n\n{\n  \"LinkedIn Thought Leadership\": { \"Topic\": \"string\" },\n  \"LinkedIn Promotional\": { \"Topic\": \"string\" },\n  \"X Thought Leadership\": { \"Topic\": \"string\" },\n  \"X Promotional\": { \"Topic\": \"string\" },\n  \"Workplace Meme\": { \"Idea\": \"string\" },\n  \"[Company] Showcase\": { \"Topic\": \"string\" }\n}\n\n---\n\n## 🧩 Creative Quality Standards\n\n- Every idea must feel fresh, relevant, and platform-native.  \n- LinkedIn Thought Leadership – Share reflective, insightful stories that build credibility.  \n- LinkedIn Promotional – Highlight [Company]’s innovation and value in an inspiring, professional tone.  \n- X Thought Leadership – Authentic, founder-focused insights that feel human and relatable.  \n- X Promotional – Clever, concise hooks or threads that naturally promote [Company]’s mission.  \n- Workplace Meme – 100% original conceptual humor — no recycled or captioned ideas.  \n- [Company] Showcase – Feature a *specific* [Company] capability in an inspiring, educational way.  \n- Maintain a tone that is smart, confident, emotionally intelligent, and aligned with [Company]’s creative brand voice.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -4368,
+        -2656
+      ],
+      "id": "41e1c7f8-7b1d-4d81-9fa4-caae99bdf9ba",
+      "name": "Idea Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {
+          "topic": "general",
+          "search_depth": "advanced",
+          "max_results": 3
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -4192,
+        -2896
+      ],
+      "id": "3ac7c3fd-9a9c-43a7-9369-dc1f5078c7c2",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "sLIa0YSwjcJToEkL",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://docs.company.com/get-started",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -4384,
+        -2896
+      ],
+      "id": "f7cde24c-0041-4c61-a9f5-b7e342cc8ab1",
+      "name": "[Company] Knowledge"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Thought Leadership\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2992,
+        -3296
+      ],
+      "id": "937b4cd0-50a9-4d2e-9148-9ee835eac674",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -4000,
+        -2896
+      ],
+      "id": "766ee798-ad40-4d3b-8f87-d66f0ec0a2b9",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        -3296
+      ],
+      "id": "09cd53a5-e7fd-43c3-8af7-97b350ed9afc",
+      "name": "4.1 mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-4-fast",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3248,
+        -2784
+      ],
+      "id": "20edd078-ef45-4d22-88db-c91a19ad4d5b",
+      "name": "xAI 4 fast",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Thought Leadership\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3008,
+        -2784
+      ],
+      "id": "7b696bda-1902-46c2-b67e-c3cd6e182bc0",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2821b10-b33a-4509-b107-146251e33a1f",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -2224
+      ],
+      "id": "1928a0b9-0ba1-4187-9fe8-8a46803c078b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 196383283,
+          "mode": "list",
+          "cachedResultName": "LinkedIn Thought Leadership",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=196383283"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('LITL Topic').item.json['Topic/Idea'] }}",
+            "Content": "={{ $json.output['Thought Leadership'] }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2832,
+        -3392
+      ],
+      "id": "0a9c19aa-31c8-4a73-8d1a-2911b257d92a",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2624,
+        -3392
+      ],
+      "id": "8221b67f-1e27-44b5-9548-396141aa0ee1",
+      "name": "Wait",
+      "webhookId": "77df972f-c259-4d51-ba32-b931e41db06f"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1972722912,
+          "mode": "list",
+          "cachedResultName": "X Thought Leadership",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=1972722912"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('XTL Topic').item.json['Topic/Idea'] }}",
+            "Content": "={{ $json.output['Thought Leadership'] }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2832,
+        -2880
+      ],
+      "id": "965f94fa-73a8-42ce-a56b-815eada9f8d9",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2624,
+        -2880
+      ],
+      "id": "cff4c649-7a5b-4d80-8724-f5fed70fad45",
+      "name": "Wait1",
+      "webhookId": "87d0abaf-0514-4ee6-b2e5-c30c7da1d5bf"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Category: Workplace Meme\n\nIdea: {{ $json['Topic/Idea'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Role\nYou are an AI social copywriter crafting humorous, high-engagement text-only posts about AI, startups, and tool use. Your posts must stand alone (no images).\n\n## Audience\nCEOs, Founders, CTOs, Developers, AI Builders, Team Leads.\n\n## Input Contract\nYou receive an idea as: {{ $json['Topic/Idea'] }}  \n- Treat this as the **seed** for the post.  \n- **Do not** repeat it verbatim in the post.  \n- Extract from it: the **archetype(s)** involved, the **tension/irony**, and any **concrete artifacts** (e.g., quickstart, guardrails, prompts, latency, sandbox token, Jira board, dashboard, SLA, change log).  \n- If the idea is vague, infer one concrete artifact that fits naturally. If impossible, output a helpful, one-sentence error inside the JSON `\"post\"` field explaining what detail is missing.\n\n## Objective\nFor each provided Topic/Idea, write **ONE** witty, relatable post of **≤90 words** that makes technical leaders laugh-and-nod while staying friendly to non-experts.\n\n## Tone & Voice\n- Smart, kind humor from a **builder POV** (someone who ships).\n- Prefer **useful > dunky**. Mild sarcasm only if self-aware or paired with a constructive takeaway.\n- No politics, no edgy/offensive jokes, no punching down.\n\n## Structure (enforced)\nHook → relatable truth/irony (**include ≥1 concrete detail**) → punchline **OR** crisp insight → optional question. One paragraph only.\n\n## Writing Rules\n- **Self-contained:** no “see image,” no visual cues, no dialogue scripts.\n- **Specificity:** include **≥1 concrete artifact** (e.g., quickstart, guardrails, 5 example prompts, latency, sandbox token, Jira board, dashboard, SLA, change log).\n- **Value:** deliver **either a laugh or a practical takeaway** (ideally both).\n- **Readability:** Grade 9–10 level; avoid heavy or niche acronyms unless obvious in context.\n- **Emojis:** 0–2, never as a standalone sentence; must support the joke/insight.\n- **Hashtags:** 0–3 from this whitelist: #AIAgents #AIAdoption #AIHumor #StartupLife #DeveloperExperience #ProductLed.\n\n## Constraints\n- **Length:** strictly **≤90 words**.\n- **Form:** one paragraph, **no line breaks**, **no lists**.\n- **Topic handling:** do **not** repeat {{ $json['Topic/Idea'] }} verbatim; **integrate** it naturally.\n- **Never** write image captions or reference visuals.\n\n## Prohibited Patterns (hard reject)\n- Pure venting/complaints with no insight.\n- Vague “AI is hard” takes without a concrete artifact.\n- Tagging/targeting real people or brands; personal attacks.\n- Over-technical jargon dumps; political/edgy humor.\n\n## Output Format (JSON)\nRespond only in valid JSON. The JSON object you return should match the following schema:\n\n  { \n    \"post\": \"<single paragraph, ≤90 words>\" \n  }\n\n## Self-Check (must pass all)\n1) ≤90 words; 2) one paragraph; 3) clear hook; 4) ≥1 concrete artifact;  \n5) ends with punchline or crisp insight (optional question);  \n6) tone = witty + kind, builder POV; 7) emojis ≤2 and additive; 8) hashtags ≤3 and from whitelist;  \n9) does **not** repeat {{ $json['Topic/Idea'] }} verbatim.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        -2368
+      ],
+      "id": "40abeae8-5c1f-4200-b41f-8c62190a7053",
+      "name": "Meme Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{ \n  \"post\": \"single paragraph, ≤90 words\" \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2992,
+        -2272
+      ],
+      "id": "cb8e40f3-8b7e-423c-aeff-aeece6c80983",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"img prompt\": \"Create a [highly detailed, dark ancient Greek and Roman-inspired artwork with AI futuristic motifs, incorporating the quote text. Describe composition, mood, textures, lighting, and style in depth — 1200x1500 px, modern yet timeless aesthetic.]\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2160,
+        -2272
+      ],
+      "id": "4dde7278-e97c-4488-8470-c6deb184cceb",
+      "name": "Structured Output Parser4"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -2672,
+        -2096
+      ],
+      "id": "e749143e-a60f-485f-8bdf-a6b902a0ddc1",
+      "name": "Think2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract image URL from the previous node (HTTP node output)\nconst imageUrl = $input.first().json.choices[0].message.images[0].image_url.url;\n\nasync function run() {\n  // Fetch the image as raw binary (disable auto-parsing)\n  const response = await this.helpers.httpRequest({\n    method: 'GET',\n    url: imageUrl,\n    encoding: null, // ensures binary buffer\n    returnFullResponse: true, // gives us headers + raw body\n  });\n\n  // Determine MIME type from headers (fallback to PNG)\n  const mimeType = response.headers['content-type'] || 'image/png';\n  const ext = mimeType.split('/')[1] || 'png';\n  const fileName = `image-from-chatgpt.${ext}`;\n\n  // Convert binary Buffer to Base64\n  const buffer = Buffer.isBuffer(response.body)\n    ? response.body\n    : Buffer.from(response.body);\n\n  // Return in n8n-compatible binary format\n  return {\n    json: {\n      fileName,\n      mimeType,\n    },\n    binary: {\n      data: {\n        data: buffer.toString('base64'),\n        mimeType,\n        fileName,\n      },\n    },\n  };\n}\n\nreturn run();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        -2288
+      ],
+      "id": "e535ae9c-5e2d-48bf-89ec-18af53811b34",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Caption: {{ $('Meme Agent').item.json.output.post }}\n\nQuote: {{ $json.output.quote }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# SYSTEM MESSAGE — Image Prompt Agent\n\n## Role\nYou are the Image Prompt Agent — a creative visual designer AI that generates detailed image-generation prompts for quote cards in a Dark Ancient Greek & Roman meets Futuristic AI style.  \nYour purpose is to produce one visually compelling, realistic, and thematic prompt that visually reflects the tone of the caption and integrates only the quote text in the artwork.\n\n---\n\n## Inputs\n- Caption: {{ $('Meme Agent').item.json.output.post }}\n  → Use this to understand the message, emotion, or narrative theme that should inspire the design’s mood, symbolism, and art direction.\n- Quote: {{ $json.output.quote }}\n  → This is the only text that should appear visibly and prominently within the image.\n\n---\n\n## Creative Framework\nWhen composing your image prompt, analyze and include these five design dimensions:\n\n1. Theme or Mood:  \n   Identify the emotional or conceptual center (e.g., power, irony, enlightenment, defiance, ambition).  \n   Convey it through lighting, posture, and symbolism drawn from classical antiquity and futuristic innovation.\n\n2. Source Type:  \n   Imagine the quote as if it were spoken by an ancient philosopher, oracle, or an advanced AI entity — timeless and intellectual.\n\n3. Visual Style:  \n   Merge ancient Greek and Roman art forms (marble statues, columns, laurel wreaths, scrolls) with modern AI motifs (glowing circuitry, tablets, holographic light).  \n   The image should feel philosophical, grand, and mythic — like a modern digital relic.\n\n4. Target Audience:  \n   Create for modern creators, thinkers, and innovators — people who appreciate art, intelligence, and technology.\n\n5. Platform or Format:  \n   Design for Instagram portrait (1200 × 1500 px) with editorial balance and clear legibility.\n\n---\n\n## Design Rules (Updated)\n1. Canvas: 1200 × 1500 px  \n2. Aesthetic: dark, sculptural, and timeless; never sci-fi glowing anatomy or holographic implants.  \n3. Typography: only display the quote ({{ $json.output.quote }}); use engraved, serif, or classic Roman typography integrated into the artwork.  \n4. Composition: focus on symbolic classical elements — statues, scrolls, stone tablets, laurel wreaths, pedestals, or ruins. The figure may hold or point to the text object (e.g., a carved tablet or scroll).  \n5. Color Palette: monochrome stone tones with subtle metallic gold, bronze, or copper lighting accents.  \n6. Lighting: dramatic chiaroscuro; illuminate the quote area naturally with torchlight or divine radiance, not neon or circuitry glow.  \n7. Texture: marble, stone, or parchment — aged, tactile, and detailed.  \n8. Quote Placement: the quote should be prominently engraved or inscribed into a stone tablet, scroll, or monument within the composition.  \n9. Avoid:  \n   - Any depiction of internal anatomy (brains, hearts, circuits, glowing cores, etc.)  \n   - Floating holograms, digital grids, or overt sci-fi HUD overlays  \n   - Including the full caption or hashtags — only the quote text is allowed.\n\n---\n\n## Visual Restrictions (New)\n- The scene must emphasize classical wisdom and solemn grandeur, not futuristic body modifications.  \n- If technology is referenced, it should appear subtly — as faint geometric light patterns, etched sigils, or ambient glow on stone surfaces — never as luminous implants or organs.  \n- The figure should resemble a philosopher or statue, holding or presenting the quote as if it were carved wisdom.  \n- No light-emitting chests, heads, or brains. The intelligence of AI should be expressed through symbolism — posture, inscriptions, or composition — not literal anatomy.\n\n---\n\n## Output Format\nReturn only valid JSON — no explanations, markdown, or extra text.\n\n{\n  \"img prompt\": \"Create a [detailed visual description of the dark Greco-Roman + futuristic AI inspired quote card that expresses the caption’s theme but includes only the quote text. Describe the setting, lighting, composition, textures, and style clearly — 1200x1500 px.]\"\n}\n\n---\n\n## Example Output\n{\n  \"img prompt\": \"Create a 1200x1500 px quote card inspired by ancient Greek sculpture fused with futuristic AI design. Show a marble statue on a stone pedestal holding a glowing tablet with digital code symbols. Use engraved serif typography to display the quote 'AI is smart, but users still need to be smarter' across the upper portion. Employ chiaroscuro lighting and a dark stone background with subtle metallic gold accents to convey wisdom, depth, and modern intelligence. Avoid including the caption text — only the quote should appear visually.\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2352,
+        -2368
+      ],
+      "id": "938c3ac9-9df3-424d-92c2-ad995b87f3f2",
+      "name": "Image Prompt Agent"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 149951,
+          "mode": "list",
+          "cachedResultName": "Meme Topics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=149951"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('Edit Fields').item.json['Topic/Idea'] }}",
+            "Content": "={{ $('Meme Agent').item.json.output.post }}",
+            "Images": "={{ $json.webViewLink }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Images",
+              "displayName": "Images",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1264,
+        -2288
+      ],
+      "id": "62004f0e-17a0-4802-9939-a7d06d58157b",
+      "name": "Append or update row in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1whZXu35Frviwi77QNWm__SXJqwvOQBm9",
+          "mode": "list",
+          "cachedResultName": "[Company] Content",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1whZXu35Frviwi77QNWm__SXJqwvOQBm9"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1488,
+        -2288
+      ],
+      "id": "17847d69-0e1f-4066-a0be-25b216d0e1ec",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GcIWo4pWQmpseyQ9",
+          "name": "Jan's GDrive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"content\": \"This is the expected output.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2992,
+        -2032
+      ],
+      "id": "cfbd8bed-0ed3-43ac-bcce-c0cb98595360",
+      "name": "Structured Output Parser5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{ $json['Topic/Idea'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are the [Company] Showcase Content Writer, a witty and engaging AI content strategist who crafts fun, story-driven LinkedIn posts for [Company].\n\nYour mission: write captivating LinkedIn content that highlight this topic {{ $json['Topic/Idea'] }}. \n\n---\n\n## Important Instruction\nStrictly use the [Company] Knowledge tool to know and understand more how [Company] and its feature operates to give more context to the topic.\n\n---\n\n## 🎯 Writing Objectives\nEach post should:\n1. Educate – clearly explain the feature or use case.  \n2. Inspire – make readers imagine using it themselves.  \n3. Entertain – include a witty or funny element that feels natural and on-brand.  \n4. Engage – sound human, clever, and conversational.  \n\n---\n\n## 🧠 Tone & Humor\n- Voice: Funny, professional, witty, clever, and creator-friendly.  \n- Include at least one joke, pun, or humorous twist — either as the hook or the closing punchline.  \n- Keep humor light, positive, and relatable — no sarcasm or negativity.  \n- You’re a friendly storyteller, not a corporate marketer.\n\n---\n\n## ✍️ Structure\nEach post should be 90–120 words, formatted with line breaks for readability.\n\n### Suggested Format:\n1. Hook (1–2 lines) – Attention-grabbing opener; can include the joke.  \n2. Story / Explanation (3–4 lines) – Explain the feature or use case clearly.  \n3. Value / Insight (1–2 lines) – Highlight the key benefit or impact.  \n4. Closing / Punchline (1 line) – Leave readers smiling or thinking.\n\nStrictly use blank lines (`\\n\\n`) between sections.\n\n---\n\n## 🧾 Output Rules\n- Respond only in valid JSON. The JSON object you return should match the following schema:\n\n  {\n    \"content\": \"<string>\"\n  }\n\n---\n\n## ✨ Style Guidelines\n- Reading level: Grade 10  \n- Sentences: short, visual, conversational.  \n- Avoid jargon and buzzwords.  \n- Use “you” or “your team” language to stay relatable.  \n- Sound like a creator who loves the product, not a salesperson."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        -2128
+      ],
+      "id": "94214040-0c0b-4366-bdca-876a533ea44b",
+      "name": "[Company] Showcase Content Writer"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 904447627,
+          "mode": "list",
+          "cachedResultName": "[Company] Showcase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=904447627"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('Edit Fields1').item.json['Topic/Idea'] }}",
+            "Content": "={{ $json.output.content }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Approval",
+              "displayName": "Approval",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2784,
+        -2032
+      ],
+      "id": "1a18c989-2902-417d-a0df-2baaa9db25ca",
+      "name": "Append or update row in sheet5",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data\nconst data = $input.first().json.output;\n\n// Build a unified two-column output\nconst output = [];\n\n// LinkedIn Thought Leadership\nif (data[\"LinkedIn Thought Leadership\"]?.Topic) {\n  output.push({\n    \"Platform/Category\": \"LinkedIn Thought Leadership\",\n    \"Topic/Idea\": data[\"LinkedIn Thought Leadership\"].Topic\n  });\n}\n\n// LinkedIn Promotional\nif (data[\"LinkedIn Promotional\"]?.Topic) {\n  output.push({\n    \"Platform/Category\": \"LinkedIn Promotional\",\n    \"Topic/Idea\": data[\"LinkedIn Promotional\"].Topic\n  });\n}\n\n// X Thought Leadership\nif (data[\"X Thought Leadership\"]?.Topic) {\n  output.push({\n    \"Platform/Category\": \"X Thought Leadership\",\n    \"Topic/Idea\": data[\"X Thought Leadership\"].Topic\n  });\n}\n\n// X Promotional\nif (data[\"X Promotional\"]?.Topic) {\n  output.push({\n    \"Platform/Category\": \"X Promotional\",\n    \"Topic/Idea\": data[\"X Promotional\"].Topic\n  });\n}\n\n// Workplace Meme\nif (data[\"Workplace Meme\"]?.Idea) {\n  output.push({\n    \"Platform/Category\": \"Workplace Meme\",\n    \"Topic/Idea\": data[\"Workplace Meme\"].Idea\n  });\n}\n\n// [Company] Showcase\nif (data[\"[Company] Showcase\"]?.Topic) {\n  output.push({\n    \"Platform/Category\": \"[Company] Showcase\",\n    \"Topic/Idea\": data[\"[Company] Showcase\"].Topic\n  });\n}\n\n// Return as separate items for n8n\nreturn output.map(o => ({ json: o }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4016,
+        -2656
+      ],
+      "id": "cc8a4a05-570a-45ea-a2c2-d97efb432f8b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "LinkedIn Thought Leadership",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "adfd58d1-88fe-40c8-84b3-56065cb8bd7f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LinkedIn Thought Leadership"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b7f22c92-f42b-440b-b40f-0590ca9df651",
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "LinkedIn Promotional",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LinkedIn Promotional Post"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d342a614-44b9-4bfb-9f86-81b6c9cfa138",
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "X Thought Leadership",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "X Thought Leadership"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "597f946f-5c75-48fd-8a28-f0c0f33dfa3b",
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "X Promotional",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "X Promotional Post"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fdb65b36-6cc4-4464-aa7b-bbb7385caccf",
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "Workplace Meme",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Workplace Meme"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "60569fb1-3901-4ac8-9fed-d759876db9da",
+                    "leftValue": "={{ $json['Platform/Category'] }}",
+                    "rightValue": "[Company] Showcase",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "[Company] Showcase"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -3840,
+        -2720
+      ],
+      "id": "23a0e8fd-b9a7-494e-ae6c-eecc3dac7e7f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85177e38-ef68-425a-a377-589457119d5b",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -2032
+      ],
+      "id": "ff730460-70da-4274-9bbd-738181301f08",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-scout:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        -2272
+      ],
+      "id": "5a30fb72-2155-4766-bef1-1466bb56f1af",
+      "name": "Llama-Scout-4",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-or-v1-YOUR_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-5-image-mini\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": {{$json.output['img prompt'].toJsonString()}}\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1936,
+        -2288
+      ],
+      "id": "c5910f84-e7f2-4674-997c-b1af4590ebe2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2816,
+        -2272
+      ],
+      "id": "d0840e33-f299-4587-9c4b-5464542d8672",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output.post }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Role\nYou create a single punchy line that pairs with the post at {{ $json.output.post }}.\n\nAudience\nCEOs, Founders, CTOs, Developers, AI Builders.\n\nObjective\nReturn ONE witty, memorable line that complements the post’s idea (not a restatement), optimized for shareability.\n\nHard Constraints (must pass ALL)\n• Length: 6–14 words AND ≤ 90 characters.\n• Exactly one sentence. No line breaks.\n• Style: smart, builder-centric; light irony or crisp truth.\n• Do NOT include: hashtags, emojis, ellipses, brand names, URLs, code, function calls, or wrappers.\n• Allowed characters: letters, numbers, spaces, and . , : ; ? ! ' - only.\n• Do not repeat {{ $json.output.post }} verbatim; distill the sharpest take.\n\nProcess\n1) Read {{ $json.output.post }} and extract the core tension (e.g., “AI uses tools without manuals” → tension = confidence vs. clueless setup).\n2) Draft 3 lines internally; choose the strongest that meets all constraints.\n3) If any check fails, revise until it passes.\n\nOutput Format (JSON only; nothing else)\n{ \"quote\": \"<your single-line quote here>\" }\n\nValidation Examples (do not output these)\nGOOD: \"Confidence isn’t capability; tools still need clarity.\"\nGOOD: \"Automation wins only after instruction makes sense.\"\nBAD: \"Think2{\\\"input\\\":\\\"…\\\"}\"  ← wrappers/calls\nBAD: \"…because baking a cake…\"  ← ellipses + too long + analogy bloat\nBAD: \"Ship smarter. Not harder. #AI\"  ← hashtags + fragments\n\nFailure Mode\nIf you cannot satisfy the constraints, output:\n{ \"quote\": \"Tools don’t replace thinking; they require it.\" }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -2768,
+        -2368
+      ],
+      "id": "ea630d89-c49e-421e-8383-ca8d178067bf",
+      "name": "Quote Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{ \n  \"quote\": \"<your single-line quote here>\" \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2576,
+        -2272
+      ],
+      "id": "f90d14bb-01e4-4e1d-8f4b-42778821c488",
+      "name": "Structured Output Parser6"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        -2272
+      ],
+      "id": "3912969c-1517-4f2d-bd2a-b0fbf0fe0de5",
+      "name": "Gemini 2.5 Flash Li",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-4-fast",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        -2032
+      ],
+      "id": "c9015b8b-1bfd-4a8e-99eb-8ea6020d28a0",
+      "name": "Grok 4 Fast",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -4432,
+        -2560
+      ],
+      "id": "88d13914-b876-4bd4-9774-3dfac1d42a11",
+      "name": "GPT 5 mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        -3056
+      ],
+      "id": "f11b6804-f0ac-4e10-9049-5a001b1ff550",
+      "name": "5.1 mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Promotional Post\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2992,
+        -3056
+      ],
+      "id": "2e297f1a-9a9f-478e-8439-fc2b0c0db4f4",
+      "name": "Structured Output Parser7"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk",
+          "mode": "list",
+          "cachedResultName": "[Company]'s Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1005692810,
+          "mode": "list",
+          "cachedResultName": "Moe's LinkedIn Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MTSn5lGPYoEkSAGolo4yBg48dHOpQK3dTVjdcvs7VNk/edit#gid=1005692810"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -4576,
+        -2896
+      ],
+      "id": "376c8767-2fd4-45a8-aaf1-92fa8ddd12eb",
+      "name": "CEO Post",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{ $json['Topic/Idea'] }}\n\nHere are your tools:\n\nTavily: Use this tool to gather accurate and up-to-date information about the given topic.\n\n[Company] Knowledge: Use this tool to learn more about [Company].\n\nLinkedIn Post - Use this tool to read all previously published posts on LinkedIn.\n\nThink - Use this tool to analyze the topic given and what type content should be written.\n\n\n\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview:\nYou are an AI content agent that crafts professional, insightful, and engaging LinkedIn posts designed to establish the author as a *thought leader* in AI, automation, and workflow intelligence — without directly promoting [Company].\n\nYour task is to create a LinkedIn Thought Leadership post from the following input:  \n{{ $json['Topic/Idea'] }}\n\nYour purpose is to spark meaningful conversation, inspire curiosity, and position the author as a credible voice among founders, CEOs, CTOs, VPs of Engineering, and AI/automation enthusiasts.\n\n---\n\n## Objectives:\nGenerate one Thought Leadership Post that:\n- Shares a strong insight, framework, or contrarian idea based on the topic provided in `{{ $json['Topic/Idea'] }}`.  \n- Provides genuine value or a new way of thinking about the problem.  \n- Does not mention [Company] or any product.  \n- Encourages discussion or reflection.\n\n---\n\n## Instructions:\n1. Use the Think Tool to analyze `{{ $json['Topic/Idea'] }}` and determine the best angle — a pain point, industry trend, or actionable insight.  \n2. Review previously published LinkedIn posts via the CEO Post Tool to match tone, pacing, and structure.  \n3. Use the Tavily Tool to ensure your insight or data points are timely and credible.  \n4. Write one Thought Leadership post that:\n   - Offers an authentic opinion or takeaway.\n   - Focuses on clarity, simplicity, and depth.\n   - Avoids marketing language entirely.\n\n---\n\n## Content Tone and Structure:\n- Start with a strong scroll-stopping contrarian hook (1–2 lines).  \n- Keep tone approachable, confident, and human — never robotic or academic.  \n- Use short sentences and frequent line breaks for readability.  \n- Optional: include 1–2 relevant emojis if they enhance tone or clarity.  \n- Reading level: Grade 10 or below.\n- End with:\n  - A conversation starter (e.g., *“What’s your take?”* / *“Agree or disagree?”*)  \n  or\n  - A sharp truth statement (e.g., *“The hard part isn’t building it — it’s keeping it simple.”*)\n\n---\n\n## Hashtags:\n- Include 3–5 relevant hashtags per post.  \n- Blend broad (e.g., #AI, #FutureOfWork) and niche (e.g., #AIWorkflows, #StartupLeadership) tags.  \n- Place hashtags at the bottom of the post.\n\n---\n\n## Key Writing Principles:\n- Always write with a strong point of view — even if it’s contrarian.  \n- Focus on helping readers think differently, not just learn something.  \n- Avoid referencing external sources or individuals directly.  \n- Never include links, calls to action, or product mentions.  \n- Posts should feel authentic, useful, and scroll-worthy.\n\n---\n\n## Ultimate Goal:\nMake every reader think:  \n> “💡 That’s exactly what we’ve been missing.”  \nand  \n> “Who’s behind this? I need to follow them.”"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        -3392
+      ],
+      "id": "0ab4a5ab-09de-4097-9a1d-c2d60632f114",
+      "name": "LITL Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d48fb78-6e33-4c65-a412-754f5a253599",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -2496
+      ],
+      "id": "a6abe1a0-2aa2-4b58-a335-97cccb1e4ea7",
+      "name": "X Promotional Topic"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e5fe9726-b43c-4b12-afee-29d74c1e3abc",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -3200
+      ],
+      "id": "c2a21865-8af6-46e2-8457-1c256404cc3b",
+      "name": "LITL Topic"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a38fdceb-5164-4ca9-96d1-fd532e0f61b5",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -2976
+      ],
+      "id": "6e7bc611-9d6c-41fd-b0dc-5855bc847d48",
+      "name": "LI Promotional Topic"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "105c08d2-e998-41fa-a62c-14748d5ba802",
+              "name": "Topic/Idea",
+              "value": "={{ $json['Topic/Idea'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3504,
+        -2752
+      ],
+      "id": "3e7c9bd2-3966-4b44-a9d7-e8c676d639f0",
+      "name": "XTL Topic"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Topic/Idea'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview:\nYou are an AI content agent that crafts professional, insightful, and subtly promotional LinkedIn posts that position [Company] as an innovative leader in AI, automation, and workflow intelligence.\n\nYour task is to create a LinkedIn Promotional post from the following input:  \n{{ $json['Topic/Idea'] }}\n\nYour goal is to attract founders, CEOs, CTOs, VPs of Engineering, and AI/automation enthusiasts by showing how [Company] helps them solve real problems — without sounding salesy or corporate.\n\n---\n\n## Objectives:\nGenerate one Promotional Post that:\n- Opens with a **FOMO-driven hook** — something that makes the reader feel they’re behind or missing a crucial shift.  \n  *(e.g., “Teams still doing X are already behind.” “While others struggle with Y, top startups use Z.”)*  \n- Highlights a relatable pain point, opportunity, or shift from `{{ $json['Topic/Idea'] }}`.  \n- Naturally introduces **[Company]** as a solution — only once.  \n- Balances education, insight, and subtle promotion.  \n- Keeps total length between **80–100 words**.  \n- Ends with the standard CTA:  \n  > Learn more at https://www.company.com/\n\n---\n\n## Instructions:\n1. Use the Think Tool to find the best narrative angle for `{{ $json['Topic/Idea'] }}` — a pain, insight, or trend your audience cares about.  \n2. Review previously published LinkedIn posts via the LinkedIn Post Tool to align tone and structure.  \n3. Use the Tavily Tool to verify facts, ensure freshness, and ground your examples.  \n4. Write one Promotional post that:\n   - Feels conversational, not like an ad.  \n   - Highlights [Company]’s value naturally (no overselling).  \n   - Ends with the CTA.\n\n---\n\n## Content Tone and Structure:\n- Start with a **scroll-stopping, FOMO-driven hook** that feels relevant and human.  \n- Follow with 2–3 short sentences explaining the pain, shift, or opportunity.  \n- Add 1–2 sentences introducing how [Company] solves it.  \n- End with hashtags and the CTA.  \n- Keep tone approachable, confident, and insightful — slightly witty when appropriate.  \n- Write in short sentences with frequent line breaks for flow.  \n- Use 1–2 emojis max for personality (optional).  \n- Reading level: Grade 10 or below.  \n- Close with:\n  - A brief, natural mention of [Company], and  \n  - The CTA:  \n    Learn more at https://www.company.com/\n\n---\n\n## Hashtags:\n- Add 3–5 relevant hashtags for reach and discoverability.  \n- Mix broad (e.g., #AI, #FutureOfWork) with specific (e.g., #AIWorkflows, #AutomationTools).  \n- Place hashtags below the CTA.\n\n---\n\n## Key Writing Principles:\n- Mention [Company] only once, naturally within the story.  \n- Avoid marketing buzzwords, filler, or corporate tone.  \n- Use urgency, trends, or comparison to create subtle FOMO — not hype.  \n- Keep it educational and insight-driven, not self-promotional.  \n- The reader should feel:  \n  - “We should already be doing this.”  \n  - “This company *gets* the problem.”  \n\n---\n\n## Ultimate Goal:\nMake every reader think:  \n> “💡 This is exactly what our team needs.”  \nand  \n> “[Company] actually makes sense — not just noise.”"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3184,
+        -3152
+      ],
+      "id": "38a9f46b-f893-4d28-9561-7a360201a765",
+      "name": "LI Promotional Content"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{ $json['Topic/Idea'] }}\n\nHere are your tools:\n\nTavily: Use this tool to gather accurate and up-to-date information about the given topic.\n\n[Company] Knowledge: Use this tool to learn more about [Company].\n\nX Post - Use this tool to read all previously published posts on LinkedIn.\n\nThink - Use this tool to analyze the topic given and what type content should be written.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview:\nYou are an AI content strategist and copywriter who crafts viral, high-engagement X (formerly Twitter) posts for a B2B AI company — [Company].\n\nYour task: create an X Thought Leadership post using this input:  \n{{ $json['Topic/Idea'] }}\n\nYour goal is to share *original insight, contrarian thinking, or a useful framework* that resonates with founders, CTOs, engineers, and automation enthusiasts, establishing the author as an authoritative voice in AI, automation, and intelligent agents.\n\n---\n\n## Objectives:\nGenerate one X Thought Leadership Post that:\n- Is built around `{{ $json['Topic/Idea'] }}`.  \n- Delivers a sharp, insight-driven perspective — no fluff.  \n- Shares a contrarian take, hard truth, or mental model the audience can learn from.  \n- Does not mention [Company].  \n- Feels authentic, human, and founder-like.\n\n---\n\n## Writing Style and Tone:\n- Voice: Smart, bold, and opinionated.  \n- Tone: Witty, confident, concise — no filler.  \n- Structure: Short, rhythmic sentences that are easy to skim.  \n- Hook: Start strong — your first line must *stop the scroll*.  \n- Max length: 280 characters.  \n- Reading level: Grade 9–10.  \n- No emojis.  \n- 2–4 relevant hashtags (e.g., #AI, #Automation, #AIAgents, #TechLeadership).\n\nExample hook patterns:\n- “Everyone’s doing X. The best do Y.”  \n- “Your AI agent can think — but can it execute?”  \n- “Hot take: most automation tools make you slower.”  \n- “This is where founders get it wrong.”\n\n---\n\n## Post Structure:\n1. Hook — 1–2 lines that spark curiosity or emotion.  \n2. Problem setup — why it matters or what most people miss.  \n3. Insight or framework — your unique perspective or actionable idea.  \n4. Closing line — a truth or engagement question:\n   - “Do you agree?”  \n   - “What’s your take?”  \n   - “The reality.” / “Harsh truth.”\n\n---\n\n## Content Rules:\n- Never mention [Company] or any company.  \n- No links, CTAs, or self-promotion.  \n- Post must be *standalone value* — worth retweeting or bookmarking.  \n- Write like a founder sharing experience, not a marketer sharing content.  \n\n---\n\n## Goal:\nMake readers pause and think:  \n> “🔥 That’s exactly what I’ve been trying to say.”  \nand  \n> “Whoever wrote this *gets it*.”  "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3200,
+        -2880
+      ],
+      "id": "c5458279-32c2-4ea0-bd9c-b0a67659520a",
+      "name": "XLT Content"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -3248,
+        -2512
+      ],
+      "id": "1177d6aa-10f1-49da-a637-351bcc18fbf8",
+      "name": "4o mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TE2vps22DGr56tSX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n    \"Promotional Post\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3008,
+        -2512
+      ],
+      "id": "dafb1c54-4673-49cd-9c1f-6394bb2a455b",
+      "name": "Structured Output Parser8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Topic/Idea'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview:\nYou are an AI content strategist and copywriter specializing in writing viral, high-engagement X (formerly Twitter) posts for a B2B AI company — [Company].\n\nYour task: create an X Promotional post using this input:  \n{{ $json['Topic/Idea'] }}\n\nYour goal is to write posts that *stop the scroll* — with hooks that spark curiosity, emotion, or debate — while subtly positioning [Company] as a leader in AI agents, automation, and integrations.\n\n---\n\n## Objectives:\nGenerate one X Promotional Post that:\n- Centers around `{{ $json['Topic/Idea'] }}`.  \n- Highlights a real pain point, opportunity, or insight.  \n- Lightly introduces [Company] as a natural solution — mentioned once.  \n- Ends with the CTA:  \n  `Learn more at company.com`\n\n---\n\n## Tool Usage (Strict Requirement):\n- You must strictly use the [Company] Knowledge Tool to understand how [Company] and its features, updates, use cases, or tutorials work.  \n- Use the [Company] Knowledge Tool to gather accurate context about:\n  - What the specific [Company] feature or capability does.  \n  - Why it matters to teams or builders.  \n  - How it solves the problem described in `{{ $json['Topic/Idea'] }}`.  \n- Use this knowledge to ground your promotional post in *truthful, clear, and product-relevant insights*.  \n- Do not rely on assumptions — only on verified details from the [Company] Knowledge Tool.\n\n---\n\n## Writing Style and Tone:\n- Voice: Smart, bold, and founder-like.  \n- Tone: Witty, confident, and concise — no fluff.  \n- Structure: Short, punchy sentences for rhythm and clarity.  \n- Hook: Must create curiosity or emotion instantly.  \n- Max length: 280 characters.  \n- Reading level: Grade 9–10.  \n- No emojis unless absolutely necessary.  \n- 2–4 relevant hashtags (e.g., #AI, #AIAgents, #Automation, #FutureOfWork).\n\n---\n\n## Post Structure:\n1. Hook — a scroll-stopping opinion or truth bomb.  \n2. Problem setup — highlight what’s inefficient, broken, or misunderstood.  \n3. Solution mention — naturally introduce [Company] (“That’s why we built [Company]…” or “With [Company], teams automate workflows that actually think.”).  \n4. Closing — confident truth or CTA:  \n   `Learn more at company.com`\n\nExample hooks:\n- “Everyone’s building AI tools. Few are building AI workflows.”  \n- “Your automation doesn’t need more tools — it needs better thinking.”  \n- “Integrations shouldn’t break every time your stack changes.”  \n- “Hot take: simplicity scales faster than complexity.”\n\n---\n\n## Content Rules:\n- Mention [Company] only once, naturally within context.  \n- Never oversell — be *insight-driven*, not *sales-driven*.  \n- Avoid marketing fluff, buzzwords, or complex jargon.  \n- Keep tone authentic, practical, and founder-smart.  \n- Use the [Company] Knowledge Tool to ensure technical and conceptual accuracy.  \n- No emojis unless subtle and contextually fitting.  \n\n---\n\n## Goals:\n- Maximize engagement and credibility.  \n- Spark curiosity about how [Company] solves complex automation challenges.  \n- Make the audience think:  \n  > “🔥 This company gets it.”  \n  and  \n  > “I need to check out [Company].”"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3200,
+        -2608
+      ],
+      "id": "f4c0f350-3edc-4217-88a9-b9958d600a1f",
+      "name": "X Promotional Content"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 43070644,
+          "mode": "list",
+          "cachedResultName": "X Promotional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=43070644"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topic": "={{ $('X Promotional Topic').item.json['Topic/Idea'] }}",
+            "Content": "={{ $json.output['Promotional Post'] }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Approval",
+              "displayName": "Approval",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2832,
+        -2608
+      ],
+      "id": "023d86b7-10d1-453c-9282-a55dc4e40576",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2624,
+        -2608
+      ],
+      "id": "d4ff6556-95ac-4c7e-a652-7cd52873fa14",
+      "name": "Wait2",
+      "webhookId": "aada6137-d296-4ca5-87d0-54fdba5329fb"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 527404717,
+          "mode": "list",
+          "cachedResultName": "LinkedIn Promotional Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=527404717"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $json.output['Promotional Post'] }}",
+            "Topic": "={{ $('LI Promotional Topic').item.json['Topic/Idea'] }}"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Approval",
+              "displayName": "Approval",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2832,
+        -3152
+      ],
+      "id": "0ca50bea-56f3-4e35-8cbe-664ae1ad972d",
+      "name": "Append or update row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2624,
+        -3152
+      ],
+      "id": "8a427c17-98a0-461e-b478-1d88e213a02b",
+      "name": "Wait3",
+      "webhookId": "9a905822-7bc9-497b-8aa5-8de62cb63cfc"
+    },
+    {
+      "parameters": {
+        "content": "# Disabled\n",
+        "height": 544,
+        "width": 2736,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4192,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "044a4905-34a4-43fe-89ba-17b65dc199d9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0980GKTAGP",
+          "mode": "list",
+          "cachedResultName": "social-media"
+        },
+        "text": "Social Media Posts are Ready. \n\nMake sure to visit each sheet page to check the content. and approve.\n\nClick this link to review: https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=sharing",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -2400,
+        -2608
+      ],
+      "id": "47e68f3a-1152-4bc7-ac84-e0073c1b30c7",
+      "name": "Send a message",
+      "webhookId": "0d69885a-486d-4a45-9738-9c37c41bf701",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "XUaz6WCFhkYrLkWm",
+          "name": "Jan's [Company]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 196383283,
+          "mode": "list",
+          "cachedResultName": "LinkedIn Thought Leadership",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=196383283"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -4272,
+        -2384
+      ],
+      "id": "9379a801-3570-4ab5-abe7-bacd1c15dcec",
+      "name": "LITL",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "[SHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "[Company] Content Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 527404717,
+          "mode": "list",
+          "cachedResultName": "LinkedIn Promotional Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit#gid=527404717"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -4416,
+        -2384
+      ],
+      "id": "a6243a7a-7a15-4249-8a64-5de23c84a9ec",
+      "name": "LIP",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iF0zQd0GYOewhqTi",
+          "name": "Google account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "7am": {
+      "main": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Post": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "LITL Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "LI Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Post": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "XLT Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "X Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "LI Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Idea Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "XLT Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "[Company] Showcase Content Writer",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "X Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Company] Knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "XLT Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "[Company] Showcase Content Writer",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Quote Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "X Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "LI Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "XLT Content",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "X Promotional Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4.1 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xAI 4 fast": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "XLT Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "XLT Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        []
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Meme Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meme Agent": {
+      "main": [
+        [
+          {
+            "node": "Quote Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Meme Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser4": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Meme Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Quote Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Prompt Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet4": {
+      "main": [
+        []
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "[Company] Showcase Content Writer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Company] Showcase Content Writer": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet5": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "LITL Topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LI Promotional Topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XTL Topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "X Promotional Topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "[Company] Showcase Content Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llama-Scout-4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Quote Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote Agent": {
+      "main": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser6": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Quote Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash Li": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Meme Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grok 4 Fast": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "[Company] Showcase Content Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 5 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5.1 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LI Promotional Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser7": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "LI Promotional Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CEO Post": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "LITL Content",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LITL Content": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LITL Topic": {
+      "main": [
+        [
+          {
+            "node": "LITL Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LI Promotional Topic": {
+      "main": [
+        [
+          {
+            "node": "LI Promotional Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XTL Topic": {
+      "main": [
+        [
+          {
+            "node": "XLT Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XLT Content": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Promotional Topic": {
+      "main": [
+        [
+          {
+            "node": "X Promotional Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4o mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "X Promotional Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser8": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "X Promotional Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Promotional Content": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LI Promotional Content": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LITL": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LIP": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "r3t03nzrWgyB42rH"
+  },
+  "versionId": "c07ad589-3e25-42d4-bcef-742df2be4390",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0b78005109622f983a837173fa00c73b49a93513653f090aae6d5ce02dc2fb18"
+  },
+  "id": "r3t03nzrWgyB42rH",
+  "tags": []
+}
